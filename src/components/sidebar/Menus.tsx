@@ -28,6 +28,11 @@ const menus: MenuTypes[] = [
         href: adminUrl("/tempat/kecamatan"),
         icon: <BsPeopleFill />,
       },
+      {
+        name: "Kelurahan",
+        href: adminUrl("/tempat/kelurahan"),
+        icon: <BsPeopleFill />,
+      },
     ],
   },
 ];

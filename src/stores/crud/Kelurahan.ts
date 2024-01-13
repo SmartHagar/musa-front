@@ -4,34 +4,22 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { crud } from "@/services/baseURL";
 import useLogin from "@/stores/auth/login";
-
-// crud nilai
-
+// kelurahan
 type Props = {
   page?: number;
   limit?: number;
   search?: string;
-  dosen_id?: string;
-  tahun?: string | number;
-  semester?: string;
 };
 
 type Store = {
-  dtNilai: any;
-  showNilai: any;
-  setNilai: ({
-    page = 1,
-    limit = 10,
-    search,
-    dosen_id,
-    tahun,
-    semester,
-  }: Props) => Promise<{
+  dtKelurahan: any;
+  showKelurahan: any;
+  setKelurahan: ({ page, limit, search }: Props) => Promise<{
     status: string;
     data?: {};
     error?: {};
   }>;
-  setShowNilai: (id: string | number) => Promise<{
+  setShowKelurahan: (id: number | string) => Promise<{
     status: string;
     data?: {};
     error?: {};
@@ -44,43 +32,26 @@ type Store = {
     id: number | string,
     data: any
   ) => Promise<{ status: string; data?: any; error?: any }>;
-  setFormData: any;
 };
 
-const useNilai = create(
+const useKelurahan = create(
   devtools<Store>((set, get) => ({
-    setFormData: (row: any) => {
-      const formData = new FormData();
-      formData.append("jadwal_id", row.jadwal_id);
-      formData.append("file", row.file);
-      return formData;
-    },
-    dtNilai: [],
-    showNilai: [],
-    setNilai: async ({
-      page = 1,
-      limit = 10,
-      search,
-      dosen_id,
-      tahun,
-      semester,
-    }) => {
+    dtKelurahan: [],
+    showKelurahan: [],
+    setKelurahan: async ({ page = 1, limit = 10, search }) => {
       try {
         const token = await useLogin.getState().setToken();
         const response = await crud({
           method: "get",
-          url: `/upload/nilai`,
+          url: `/kelurahan`,
           headers: { Authorization: `Bearer ${token}` },
           params: {
             limit,
             page,
             search,
-            dosen_id,
-            tahun,
-            semester,
           },
         });
-        set((state) => ({ ...state, dtNilai: response.data.data }));
+        set((state) => ({ ...state, dtKelurahan: response.data.data }));
         return {
           status: "berhasil",
           data: response.data,
@@ -92,16 +63,15 @@ const useNilai = create(
         };
       }
     },
-    setShowNilai: async (id) => {
+    setShowKelurahan: async (id) => {
       try {
         const token = await useLogin.getState().setToken();
         const response = await crud({
           method: "get",
-          url: `/upload/nilai/${id}`,
+          url: `/kelurahan/${id}`,
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log({ response });
-        set((state) => ({ ...state, showNilai: response.data.data }));
+        set((state) => ({ ...state, showKelurahan: response.data.data }));
         return {
           status: "berhasil",
           data: response.data,
@@ -114,23 +84,21 @@ const useNilai = create(
       }
     },
     addData: async (row) => {
-      const formData = row?.file ? get().setFormData(row) : row;
       try {
         const token = await useLogin.getState().setToken();
         const res = await crud({
           method: "post",
-          url: `/upload/nilai`,
+          url: `/kelurahan`,
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
           },
-          data: formData,
+          data: row,
         });
-        set((prevState: any) => ({
-          dtNilai: {
-            last_page: prevState.dtNilai.last_page,
-            current_page: prevState.dtNilai.current_page,
-            data: [res.data.data, ...prevState.dtNilai.data],
+        set((prevState) => ({
+          dtKelurahan: {
+            last_page: prevState.dtKelurahan.last_page,
+            current_page: prevState.dtKelurahan.current_page,
+            data: [res.data.data, ...prevState.dtKelurahan.data],
           },
         }));
         return {
@@ -149,14 +117,16 @@ const useNilai = create(
         const token = await useLogin.getState().setToken();
         const res = await crud({
           method: "delete",
-          url: `/upload/nilai/${id}`,
+          url: `/kelurahan/${id}`,
           headers: { Authorization: `Bearer ${token}` },
         });
-        set((prevState: any) => ({
-          dtNilai: {
-            last_page: prevState.dtNilai.last_page,
-            current_page: prevState.dtNilai.current_page,
-            data: prevState.dtNilai.data.filter((item: any) => item.id !== id),
+        set((prevState) => ({
+          dtKelurahan: {
+            last_page: prevState.dtKelurahan.last_page,
+            current_page: prevState.dtKelurahan.current_page,
+            data: prevState.dtKelurahan.data.filter(
+              (item: any) => item.id !== id
+            ),
           },
         }));
         return {
@@ -171,32 +141,19 @@ const useNilai = create(
       }
     },
     updateData: async (id, row) => {
-      delete row.id;
-      const formData = row?.file ? get().setFormData(row) : row;
-      const token = await useLogin.getState().setToken();
-      const headersImg = {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${token}`,
-      };
       try {
+        const token = await useLogin.getState().setToken();
         const response = await crud({
-          url: `/upload/nilai/${id}`,
-          method: "post",
-          headers: row?.file
-            ? headersImg
-            : {
-                Authorization: `Bearer ${token}`,
-              },
-          data: formData,
-          params: {
-            _method: "PUT",
-          },
+          method: "PUT",
+          url: `/kelurahan/${id}`,
+          headers: { Authorization: `Bearer ${token}` },
+          data: row,
         });
-        set((prevState: any) => ({
-          dtNilai: {
-            last_page: prevState.dtNilai.last_page,
-            current_page: prevState.dtNilai.current_page,
-            data: prevState.dtNilai.data.map((item: any) => {
+        set((prevState) => ({
+          dtKelurahan: {
+            last_page: prevState.dtKelurahan.last_page,
+            current_page: prevState.dtKelurahan.current_page,
+            data: prevState.dtKelurahan.data.map((item: any) => {
               if (item.id === id) {
                 return {
                   ...item,
@@ -222,4 +179,4 @@ const useNilai = create(
   }))
 );
 
-export default useNilai;
+export default useKelurahan;

@@ -1,9 +1,7 @@
 /** @format */
 "use client";
 import AnimatedNumber from "@/components/animated/AnimatedNumber";
-import useDosenApi from "@/stores/api/Dosen";
-import useMatkulApi from "@/stores/api/Matkul";
-import useRuanganApi from "@/stores/api/Ruangan";
+import useRuanganApi from "@/stores/api/Kecamatan";
 import { config } from "@react-spring/web";
 import React, { useEffect } from "react";
 import {
